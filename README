@@ -1,0 +1,85 @@
+$Id: README,v 1.5 2006/12/05 20:47:56 bu Exp $
+
+Microbrew md5sum/sha1sum/ripemd160sum
+Copyright (c) 2004, Bulent Yilmaz <bu@microbrew.org>
+ for Microbrew Software
+
+LICENSE
+-------
+
+GNU GPL >= 2.  See file 'LICENSE'.
+
+Special exemption from the GPL is given solely for the purpose of linking 
+with OpenSSL which is distributed under the BSD license.  This is the only
+exemption from the GPL which is given and all parts of the GPL are still
+in effect including those parts which are similar to the exemption above
+
+
+DESCRIPTION
+-----------
+
+Drop in replacement for md5sum from 'GNU textutils'.  I wanted to install
+'md5sum' on my Solaris boxen but didn't want the trauma of installing GNU
+textutils... especially when Solaris comes with 95% of those programs in
+the first place.
+
+So, here it is.  The culmination of 3 hours of coding, a pot of coffee, 3 
+breaks, 2 hours of maintaining my hatred of GNU autoconf, 2 hours of 
+documentation, and one Solaris package.  BTW, if you know Ulrich Drepper, 
+smack him for me for making me run around in circles to figure out what his 
+md5sum was doing with its command line options.
+
+
+INSTALLATION
+------------
+
+Please look at the file 'INSTALL'
+
+
+USAGE
+-----
+
+Efforts were taken to make these programs as compatible as possible to their
+counterparts from GNU textutils.  This doesn't mean that they -are- compatible
+but most people will not be able to notice the difference.
+
+Here's a dump of 'md5sum --help'
+
+############################################################################
+$ md5sum --help
+Usage: ./md5sum [<option>] <file> [<file> [...] ]
+       ./md5sum [<option>] --check <file>
+
+Note:  These options are mostly compatible with GNU md5sum
+       -s, -h, and -V are not available in GNU md5sum
+
+ -b, --binary         Read files in binary mode
+ -c, --check <file>   Check MD5 sums from <file>
+ -t, --text           Read files in ASCII mode
+
+ -s, --status         Silent mode: Use exit code to determine verification
+
+ -h, --help           Display this help message and exit
+ -V, --version        Display program version and exit
+############################################################################
+
+Pretty self-explainatory.  If you must have a man page for this program, the
+one for 'md5sum' from 'GNU textutils' should suit you fine.  If you -MUST- 
+have one specifically for this program, feel free to write it up and send it 
+to me. :^p
+
+
+REPORTING BUGS
+--------------
+
+As an interlude:  It is funny how visually and conceptually similar 
+'reposting bugs' and 'reporting bugs' are.  Chew on that for a bit.
+
+And oh, yeah... You can email me the bug reports for now.
+
+
+THANKS IN ORDER
+---------------
+
+* Steve Moon for a compile fix which can be found in version 0.9.4.
+* Ralf S. Engelschall for a fix which can be found in version 0.9.5.

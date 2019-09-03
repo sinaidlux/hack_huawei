@@ -1,0 +1,217 @@
+#!/bin/sh
+##############################################################################
+# $Id: configure,v 1.6 2004/08/04 02:12:36 bu Exp $
+#
+# Copyright 2004, Bulent Yilmaz
+# for Microbrew Software
+#
+# Part of Microbrew md5sum/sha1sum
+# GNU textutils md5sum replacement
+#
+# http://www.microbrew.org/tools/md5sha1sum.html
+#
+# Microbrew md5sum/sha1sum is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# MicroSieve is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with MicroSieve; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+##############################################################################
+#
+# Nope: Its not GNU autoconf
+
+PREFIX=/usr/local
+for i in $@; do
+  case "$i" in
+    --prefix=*) PREFIX=`echo $i | sed 's/--prefix=//'`;;
+    *) echo "Unknown option: $i"
+       exit;;
+  esac
+done
+
+echo "setting prefix... $PREFIX"
+
+# Mostly not GNU autoconf... except for this section:
+case `echo "testing\c"; echo 1,2,3`,`echo -n testing; echo 1,2,3` in
+  *c*,-n*) ECHO_N= ECHO_C='
+' ECHO_T='      ' ;;
+  *c*,*  ) ECHO_N=-n ECHO_C= ECHO_T= ;;
+  *)       ECHO_N= ECHO_C='\c' ECHO_T= ;;
+esac
+
+echo $ECHO_N "checking system type... $ECHO_C"
+
+SYS=`uname -s`
+case "$SYS" in
+  Linux) echo "Mmmm, Linux";;
+  SunOS) echo $ECHO_N "$SYS... $ECHO_C"
+         REL=`uname -r`
+         SOLARIS=`echo $REL | grep "5\.*"`
+         if [ -z "$SOLARIS" ]; then
+             echo "not Solaris... $REL"
+         else
+             echo "Solaris... $REL"
+         fi;;
+  Darwin) echo "Interestink.  OS X";;
+  *) echo "It should work: $SYS" ;;
+esac
+
+# Find a C compiler
+echo $ECHO_N "checking for a C compiler... $ECHO_C"
+if [ -z "$CC" ]; then
+  CC=`which gcc`
+  if [ -x $CC ]; then
+    echo "$CC"
+  else
+    CC=`which cc`
+    if [ -x $CC ]; then
+      echo "$CC"
+    else
+      echo "Unable to find a compiler"
+      echo "Please run this script as such: CC=<path/to/compiler> $0"
+      exit 1;
+    fi
+  fi
+else
+  echo "CC defined in shell: $CC";
+fi
+
+echo $ECHO_N "checking to see if $PREFIX/bin/md5sum is Microbrew... $ECHO_C"
+if [ -x $PREFIX/bin/md5sum ]; then
+  $PREFIX/bin/md5sum --version | grep "Microbrew" > /dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "no (will not overwrite)"
+    MD5BINNAME="ubmd5sum";
+  else
+    echo "yes"
+    MD5BINNAME="md5sum";
+  fi
+else
+  echo "does not exist"
+  MD5BINNAME="md5sum"
+fi
+
+echo $ECHO_N "checking to see if $PREFIX/bin/sha1sum is Microbrew... $ECHO_C"
+if [ -x $PREFIX/bin/sha1sum ]; then
+  $PREFIX/bin/sha1sum --version | grep "Microbrew" > /dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "no (will not overwrite)"
+    SHA1BINNAME="ubsha1sum";
+  else
+    echo "yes"
+    SHA1BINNAME="sha1sum";
+  fi
+else
+  echo "does not exist"
+  SHA1BINNAME="sha1sum"
+fi
+
+echo $ECHO_N "checking to see if $PREFIX/bin/ripemd160sum is Microbrew... $ECHO_C"
+if [ -x $PREFIX/bin/ripemd160sum ]; then
+  $PREFIX/bin/ripemd160sum --version | grep "Microbrew" > /dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "no (will not overwrite)"
+    RIPEMD160BINNAME="ubripemd160sum";
+  else
+    echo "yes"
+    RIPEMD160BINNAME="ripemd160sum";
+  fi
+else
+  echo "does not exist"
+  RIPEMD160BINNAME="ripemd160sum"
+fi
+
+# Find OpenSSL headers
+echo $ECHO_N "looking for OpenSSL headers 'openssl/md5.h'... $ECHO_C"
+for i in $SSLINCPATH /usr/local/include /usr/local/ssl/include /usr/include /usr/ssl/include; do
+  if [ -f $i/openssl/md5.h ]; then
+    REALSSLINCPATH=$i;
+    break;
+  fi
+done
+
+if [ -z "$REALSSLINCPATH" ]; then
+  echo "Cannot find it."
+  echo "Please run this script as such: SSLINCPATH=<path/to/ssl/include> $0"
+  exit 1;
+fi
+
+echo "$REALSSLINCPATH"
+ 
+# Find OpenSSL libraries
+echo $ECHO_N "looking for OpenSSL libraries... $ECHO_C"
+for i in $SSLLIBPATH /usr/local/lib /usr/local/ssl/lib /usr/lib /usr/ssl/lib; do
+  if [ "$SYS" != Darwin ]; then
+    if [ -x $i/libssl.so ]; then
+      REALSSLLIBPATH=$i;
+      SSLLIBMODE=shared
+      break;
+    fi
+  else
+    # OSX and their libfoo.dylib
+    if [ -x $i/libssl.dylib ]; then
+      REALSSLLIBPATH=$i;
+      SSLLIBMODE=shared
+      break;
+    fi
+  fi
+  if [ -f $i/libssl.a ]; then
+    REALSSLLIBPATH=$i;
+    SSLLIBMODE=static
+    break;
+  fi
+done
+
+if [ -z "$REALSSLLIBPATH" ]; then
+  echo "Cannot find it."
+  echo "Please run this script as such: SSLLIBPATH=<path/to/ssl/lib> $0"
+  exit 1;
+fi
+
+echo "$REALSSLLIBPATH ($SSLLIBMODE)"
+
+CFLAGS="$CFLAGS -I$REALSSLINCPATH"
+LDFLAGS="$LDFLAGS -L$REALSSLLIBPATH"
+
+if [ "$SYS" = "SunOS" ]; then
+  if [ "$SSLLIBMODE" = "shared" ]; then
+    echo "Setting RPATH for Solaris (because of shared libraries)"
+    LDFLAGS="$LDFLAGS -R$REALSSLLIBPATH"
+  fi
+fi
+
+LDFLAGS="$LDFLAGS -lssl -lcrypto"
+
+cat > sys-setup.mk << EOF
+CC=$CC
+CFLAGS=$CFLAGS
+LDFLAGS=$LDFLAGS
+BINDIR=$PREFIX/bin
+MD5BINNAME=$MD5BINNAME
+SHA1BINNAME=$SHA1BINNAME
+RIPEMD160BINNAME=$RIPEMD160BINNAME
+EOF
+
+echo
+echo
+echo " Okay.  That's good enough for me.  Check the following out real quick:"
+echo
+echo "         CC = $CC"
+echo "     CFLAGS = $CFLAGS"
+echo "    LDFLAGS = $LDFLAGS"
+echo
+echo " Binaries will be installed in '$PREFIX/bin'"
+echo
+echo "  $PREFIX/bin/$MD5BINNAME"
+echo "  $PREFIX/bin/$SHA1BINNAME"
+echo "  $PREFIX/bin/$RIPEMD160BINNAME"
+echo
+echo " If you can dig it, type 'make'"
+echo

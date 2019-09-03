@@ -1,0 +1,50 @@
+$Id: INSTALL,v 1.3 2004/08/02 02:13:02 bu Exp $
+
+REQUIREMENTS
+------------
+
+OpenSSL >= 0.9.6
+
+
+INSTALLATION
+------------
+
+./configure [--prefix=<prefix>]
+make
+make install
+
+Pretty simple.  Just so you know, it isn't GNU autoconf so it won't take for
+ever to do the 'configure' part.  You can seed the following options into
+the configure script:
+
+	Variable	Function
+	--------	------------------------------------------------
+	CC		Defines which C compiler to use
+	CFLAGS		Preconfigure which CFLAGS to use
+	LDFLAGS		Preconfigure which LDFLAGS to use
+	SSLINCPATH	Specify where to find the OpenSSL headers
+	SSLLIBPATH	Specify where to find the OpenSSL libraries
+ 
+For example:
+
+  $ CC="/usr/home/me/.secret-stash/bin/the-good-gcc" ./configure
+
+That should be enough because there is no more.  It is smart enough to figure
+most things out by itself.  But not always.
+
+
+SYSTEM SPECIFIC
+---------------
+
+o Solaris - 64bit
+  SPARC64 Linux
+
+If you are using a GCC >= 3.2, you can build this program 64-bit (so as long as
+you have 64-bit OpenSSL libraries).  If you're using Forte, I'll let you figure
+out the options for yourself.
+
+The options to use:
+
+  $ LDFLAGS="-m64" CFLAGS="-m64" SSLLIBPATH=/usr/local/ssl/lib/sparcv9 \
+    ./configure
+
