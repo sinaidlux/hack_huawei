@@ -1,2 +1,1 @@
-# hack_huawei
-hack huawei phone
+# Huawei-Hacker-Toolkit
